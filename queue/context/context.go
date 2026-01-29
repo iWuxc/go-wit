@@ -1,0 +1,81 @@
+package context
+
+import (
+	"context"
+	"github.com/iWuxc/go-wit/queue/contract"
+	"time"
+)
+
+type taskMetadata struct {
+	id         string
+	maxRetry   int
+	retryCount int
+	queue      string
+}
+
+// ctxKey type is unexported to prevent collisions with context keys defined in
+// other packages.
+type ctxKey int
+
+// metadataCtxKey is the context key for the task metadata.
+// Its value of zero is arbitrary.
+const metadataCtxKey ctxKey = 0
+
+// WithMateData returns a context and cancel function for a given task message.
+func WithMateData(base context.Context, msg *contract.Task, deadline time.Time) (context.Context, context.CancelFunc) {
+	metadata := taskMetadata{
+		id:         msg.ID,
+		maxRetry:   msg.Retry,
+		retryCount: msg.Retried,
+		queue:      msg.Queue,
+	}
+	ctx := context.WithValue(base, metadataCtxKey, metadata)
+	return context.WithDeadline(ctx, deadline)
+}
+
+// GetTaskID extracts a task ID from a context, if any.
+//
+// ID of a task is guaranteed to be unique.
+// ID of a task doesn't change if the task is being retried.
+func GetTaskID(ctx context.Context) (id string, ok bool) {
+	metadata, ok := ctx.Value(metadataCtxKey).(taskMetadata)
+	if !ok {
+		return "", false
+	}
+	return metadata.id, true
+}
+
+// GetRetryCount extracts retry count from a context, if any.
+//
+// Return value n indicates the number of times associated task has been
+// retried so far.
+func GetRetryCount(ctx context.Context) (n int, ok bool) {
+	metadata, ok := ctx.Value(metadataCtxKey).(taskMetadata)
+	if !ok {
+		return 0, false
+	}
+	return metadata.retryCount, true
+}
+
+// GetMaxRetry extracts maximum retry from a context, if any.
+//
+// Return value n indicates the maximum number of times the assoicated task
+// can be retried if ProcessTask returns a non-nil error.
+func GetMaxRetry(ctx context.Context) (n int, ok bool) {
+	metadata, ok := ctx.Value(metadataCtxKey).(taskMetadata)
+	if !ok {
+		return 0, false
+	}
+	return metadata.maxRetry, true
+}
+
+// GetQueueName extracts queue name from a context, if any.
+//
+// Return value qname indicates which queue the task was pulled from.
+func GetQueueName(ctx context.Context) (qname string, ok bool) {
+	metadata, ok := ctx.Value(metadataCtxKey).(taskMetadata)
+	if !ok {
+		return "", false
+	}
+	return metadata.queue, true
+}

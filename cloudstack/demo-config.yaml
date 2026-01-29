@@ -1,0 +1,19 @@
+cloudstack:
+  sts:
+    default:
+      driver: aws #aws
+      access_key_id:
+      access_key_secret:
+      bucket_name: isheji-dam-s3 # bucket 名称
+      role_arn:  # RAM角色ARN
+      role_session_name:  # 角色会话名称
+      endpoint: cn-beijing
+      duration_seconds: 3600
+      region:
+      s3_force_path_style : #bool
+      policy :
+      https : true
+      iam_account: #ctyunobs
+      iam_pwd: #ctyunobs
+      PrimaryAccount: #ctyunobs
+    custom:

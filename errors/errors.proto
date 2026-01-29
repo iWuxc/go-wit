@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package errors;
+
+option go_package = "github.com/iWuxc/go-wit/errors;errors";
+
+message Error {
+  int32 code = 1;
+  string reason = 2;
+  string message = 3;
+  string level = 4;
+  string location = 5;
+  map<string, string> metadata = 6;
+};
