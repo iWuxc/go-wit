@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/iWuxc/go-wit/metrics/stat"
 	"github.com/gin-gonic/gin"
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

@@ -48,15 +48,18 @@ func SetOutput(name string, maxAgeDay uint32) Option {
 	if len(name) > 4 && name[len(name)-4:] == ".log" {
 		name = name[:len(name)-4]
 	}
-	var writer *rotatelogs.RotateLogs
+	var (
+		writer *rotatelogs.RotateLogs
+		err    error
+	)
 	if name[0] == '/' {
-		writer, _ = rotatelogs.New(
+		writer, err = rotatelogs.New(
 			name+"_%Y-%m-%d.log",
 			rotatelogs.WithMaxAge(time.Hour*24*time.Duration(int64(maxAgeDay))),
 			rotatelogs.WithRotationTime(time.Hour*24),
 		)
 	} else {
-		writer, _ = rotatelogs.New(
+		writer, err = rotatelogs.New(
 			_defaultPath+name+"_%Y-%m-%d.log",
 			rotatelogs.WithMaxAge(time.Hour*24*time.Duration(int64(maxAgeDay))),
 			rotatelogs.WithRotationTime(time.Hour*24),
@@ -64,6 +67,10 @@ func SetOutput(name string, maxAgeDay uint32) Option {
 	}
 
 	return func(log *logrus.Logger) {
+		if err != nil || writer == nil {
+			log.Warnf("rotatelogs init failed: %v, log file output disabled", err)
+			return
+		}
 		log.AddHook(lfshook.NewHook(lfshook.WriterMap{
 			logrus.PanicLevel: writer,
 			logrus.FatalLevel: writer,
@@ -83,15 +90,18 @@ func SetOutputWithRotationTime(name string, maxAgeHour uint32, rotationTime time
 	if len(name) > 4 && name[len(name)-4:] == ".log" {
 		name = name[:len(name)-4]
 	}
-	var writer *rotatelogs.RotateLogs
+	var (
+		writer *rotatelogs.RotateLogs
+		err    error
+	)
 	if name[0] == '/' {
-		writer, _ = rotatelogs.New(
+		writer, err = rotatelogs.New(
 			name+"_%Y-%m-%d-%H.log",
 			rotatelogs.WithMaxAge(time.Hour*24*time.Duration(int64(maxAgeHour))),
 			rotatelogs.WithRotationTime(rotationTime),
 		)
 	} else {
-		writer, _ = rotatelogs.New(
+		writer, err = rotatelogs.New(
 			_defaultPath+name+"_%Y-%m-%d-%H.log",
 			rotatelogs.WithMaxAge(time.Hour*time.Duration(int64(maxAgeHour))),
 			rotatelogs.WithRotationTime(rotationTime),
@@ -99,6 +109,10 @@ func SetOutputWithRotationTime(name string, maxAgeHour uint32, rotationTime time
 	}
 
 	return func(log *logrus.Logger) {
+		if err != nil || writer == nil {
+			log.Warnf("rotatelogs init failed: %v, log file output disabled", err)
+			return
+		}
 		log.AddHook(lfshook.NewHook(lfshook.WriterMap{
 			logrus.PanicLevel: writer,
 			logrus.FatalLevel: writer,

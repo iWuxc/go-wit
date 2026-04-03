@@ -49,7 +49,7 @@ func (a *App) Run() error {
 	}
 
 	eg, ctx := errgroup.WithContext(a.ctx)
-	addr := strings.Join(instance.Endpoints, ":")
+	addr := strings.Join(instance.Endpoints, ",")
 	wg := sync.WaitGroup{}
 	for _, server := range a.opts.servers {
 		srv := server

@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/iWuxc/go-wit/errors"
 	"github.com/iWuxc/go-wit/utils"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 )
 
 func (r *Redis) MGet(ctx context.Context, keys ...string) ([]interface{}, error) {
@@ -29,8 +29,8 @@ func (r *Redis) HSet(ctx context.Context, key string, val ...interface{}) (int64
 	return r.client.HSet(ctx, key, val...).Result()
 }
 
-func (r *Redis) HGet(ctx context.Context, keys ...string) ([]interface{}, error) {
-	return r.client.MGet(ctx, keys...).Result()
+func (r *Redis) HGet(ctx context.Context, key, field string) (string, error) {
+	return r.client.HGet(ctx, key, field).Result()
 }
 
 // HMSet is a deprecated version of HSet left for compatibility with Redis 3.
@@ -113,13 +113,13 @@ func (r *Redis) SAdd(ctx context.Context, key string, members ...interface{}) (i
 }
 
 // ZAdd `ZADD key score member [score member ...]` command.
-func (r *Redis) ZAdd(ctx context.Context, key string, members ...*redis.Z) (int64, error) {
+func (r *Redis) ZAdd(ctx context.Context, key string, members ...redis.Z) (int64, error) {
 	return r.client.ZAdd(ctx, key, members...).Result()
 }
 
 // ZAddXX `ZADD key XX score member [score member ...]` command.
-func (r *Redis) ZAddXX(ctx context.Context, key string, members ...*redis.Z) (int64, error) {
-	return r.client.ZAddXX(ctx, key, members...).Result()
+func (r *Redis) ZAddXX(ctx context.Context, key string, members ...redis.Z) (int64, error) {
+	return r.client.ZAddArgs(ctx, key, redis.ZAddArgs{XX: true, Members: members}).Result()
 }
 
 func (r *Redis) ZRem(ctx context.Context, key string, members ...interface{}) (int64, error) {
@@ -143,10 +143,10 @@ func (r *Redis) ZRangeByScore(ctx context.Context, key string, opt RangeBy) ([]s
 	return r.client.ZRangeByScore(ctx, key, &rangeBy).Result()
 }
 
-func (r *Redis) RedisZ(members map[string]float64) []*redis.Z {
-	var rz []*redis.Z
+func (r *Redis) RedisZ(members map[string]float64) []redis.Z {
+	var rz []redis.Z
 	for member, score := range members {
-		rz = append(rz, &redis.Z{Member: member, Score: score})
+		rz = append(rz, redis.Z{Member: member, Score: score})
 	}
 	return rz
 }

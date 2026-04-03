@@ -49,6 +49,8 @@ type Logger interface {
 	WithContext(ctx context.Context) Logger
 	// WithLevel .
 	WithLevel(level LogLevel) Logger
+	// WithHook adds a logrus hook to the logger.
+	WithHook(hook logrus.Hook) Logger
 	// Printf logs a message at level Info.
 	Printf(format string, args ...interface{})
 	// Info logs a message at level Info.
@@ -125,6 +127,8 @@ func SetLogger(name string, logger Logger) Logger {
 }
 
 func GetLogger(name string) Logger {
+	globalLoggersLock.RLock()
+	defer globalLoggersLock.RUnlock()
 	return globalLoggers[name]
 }
 

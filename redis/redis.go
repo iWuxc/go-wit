@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/iWuxc/go-wit/errors"
 	"github.com/iWuxc/go-wit/utils"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"os"
 	"time"
 )
@@ -13,28 +13,21 @@ type Redis struct {
 	client *redis.Client
 }
 
-// GetRedis .
+// GetRedis returns the named Redis instance, or the global default instance.
+// The global default instance is initialized once from the "redis_conf" environment variable.
 func GetRedis(name ...string) *Redis {
 	if len(name) > 0 {
 		return getRedis(name[0])
 	}
 
-	if _redis != nil {
-		return _redis
-	}
-
-	var (
-		conf string
-		err  error
-	)
-	if c := os.Getenv("redis_conf"); len(c) > 0 {
-		conf = c
-	}
-
-	_redis, err = NewRedis(conf, global)
-	if err != nil {
-		panic(err.Error())
-	}
+	_redisOnce.Do(func() {
+		conf := os.Getenv("redis_conf")
+		var err error
+		_redis, err = NewRedis(conf, global)
+		if err != nil {
+			panic(err.Error())
+		}
+	})
 
 	return _redis
 }

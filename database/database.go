@@ -28,8 +28,9 @@ type DataConf struct {
 
 	// DBConf db conn pool conf.
 	DBConf struct {
-		MaxOpenConn     int           `json:"max_open_conn" mapstructure:"max_open_conn"`
-		MaxIdleConn     int           `json:"max_idle_conn" mapstructure:"max_idle_conn"`
+		MaxOpenConn int `json:"max_open_conn" mapstructure:"max_open_conn"`
+		MaxIdleConn int `json:"max_idle_conn" mapstructure:"max_idle_conn"`
+		// ConnMaxLifeTime 连接最大存活时间，直接使用 time.Duration，例如 30*time.Minute。
 		ConnMaxLifeTime time.Duration `json:"conn_max_life_time" mapstructure:"conn_max_life_time"`
 	} `json:"db_conf" mapstructure:"db_conf"`
 }
@@ -70,7 +71,7 @@ func NewDB(conf *DataConf) (DB, func(), error) {
 
 	sqlDB.SetMaxOpenConns(conf.DBConf.MaxOpenConn)
 	sqlDB.SetMaxIdleConns(conf.DBConf.MaxIdleConn)
-	sqlDB.SetConnMaxLifetime(time.Minute * conf.DBConf.ConnMaxLifeTime)
+	sqlDB.SetConnMaxLifetime(conf.DBConf.ConnMaxLifeTime)
 
 	return db, func() {
 		_ = sqlDB.Close()

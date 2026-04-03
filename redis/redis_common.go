@@ -3,7 +3,7 @@ package redis
 import (
 	"context"
 	"github.com/iWuxc/go-wit/errors"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 	"sync"
 )
 
@@ -11,6 +11,7 @@ const global = "common"
 
 var (
 	_redis     *Redis
+	_redisOnce sync.Once
 	_redisMap  = map[string]*Redis{}
 	_redisLock = sync.RWMutex{}
 )
